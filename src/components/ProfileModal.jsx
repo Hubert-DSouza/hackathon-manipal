@@ -1,14 +1,15 @@
 import React from 'react';
 import { supabase } from '../lib/supabase';
+import { IconShield, IconStar, IconPin, IconFile, IconCheckCircle, IconZap } from './Icons';
 
-export default function ProfileModal({ user, profile, onClose, onSignOut, userEvents = [] }) {
+export default function ProfileModal({ user, profile, points = 50, credibility = 94, onClose, onSignOut, userEvents = [], savedEventsList = [], confirmCount = 0 }) {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     onSignOut();
     onClose();
   };
 
-  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email || 'Anonymous Citizen';
+  const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'SociTea Member';
   const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80';
 
   return (
@@ -21,34 +22,52 @@ export default function ProfileModal({ user, profile, onClose, onSignOut, userEv
             <img src={avatarUrl} alt={displayName} />
           </div>
           <h3>{displayName}</h3>
-          <p className="profile-email">{user?.email}</p>
-          <div className="reputation-badge">
-            <span>⭐ Ripple Citizen</span>
+          <p className="profile-email">{user?.email || 'Logged in user'}</p>
+          <div className="credibility-pill">
+            <IconShield size={12} color="#0b7067" /> &nbsp;
+            <span>{credibility}% Credibility</span>
           </div>
         </div>
 
-        <div className="profile-stats-row">
-          <div className="stat-box">
+        {/* Gamified Stats Dashboard */}
+        <div className="profile-stats-grid">
+          <div className="stat-card points">
+            <span className="stat-icon"><IconStar size={18} color="#087267" /></span>
+            <strong>{points}</strong>
+            <small>SociTea Points</small>
+          </div>
+          <div className="stat-card">
+            <span className="stat-icon"><IconFile size={18} color="#455a64" /></span>
             <strong>{userEvents.length}</strong>
-            <small>Reports Filed</small>
+            <small>My Reports</small>
           </div>
-          <div className="stat-box">
-            <strong>Manipal</strong>
-            <small>Home Base</small>
+          <div className="stat-card">
+            <span className="stat-icon"><IconCheckCircle size={18} color="#087267" /></span>
+            <strong>{confirmCount}</strong>
+            <small>Verifications</small>
+          </div>
+          <div className="stat-card">
+            <span className="stat-icon"><IconZap size={18} color="#e65100" /></span>
+            <strong>5 Days</strong>
+            <small>Streak</small>
           </div>
         </div>
 
+        {/* My Reports Section */}
         <div className="profile-section">
-          <h4>Your Recent Submissions</h4>
+          <h4>My Submitted Reports</h4>
           {userEvents.length === 0 ? (
-            <p className="empty-sub-text">You haven't filed any incident reports yet.</p>
+            <div className="empty-sub-box">
+              <p>You haven't posted any local reports yet.</p>
+              <small>Spot a pothole, road block, or water logging? Tap '+' to report!</small>
+            </div>
           ) : (
             <div className="user-events-list">
               {userEvents.map((evt) => (
                 <div key={evt.id} className="user-event-item">
-                  <div>
+                  <div className="item-details">
                     <strong>{evt.title}</strong>
-                    <small>{evt.location}</small>
+                    <small><IconPin size={10} color="#0b7067" /> {evt.location} · {evt.time || 'Recently'}</small>
                   </div>
                   <span className="status-tag">Active</span>
                 </div>
@@ -56,6 +75,24 @@ export default function ProfileModal({ user, profile, onClose, onSignOut, userEv
             </div>
           )}
         </div>
+
+        {/* Saved Reports Section */}
+        {savedEventsList && savedEventsList.length > 0 && (
+          <div className="profile-section" style={{ marginTop: '16px' }}>
+            <h4>Saved Reports ({savedEventsList.length})</h4>
+            <div className="user-events-list">
+              {savedEventsList.map((evt) => (
+                <div key={evt.id} className="user-event-item" style={{ background: '#eaf5f2', border: '1px solid #b2dfdb' }}>
+                  <div className="item-details">
+                    <strong>{evt.title}</strong>
+                    <small><IconPin size={10} color="#0b7067" /> {evt.location} · {evt.time || 'Recently'}</small>
+                  </div>
+                  <span className="status-tag" style={{ background: '#087267', color: '#ffffff' }}>Saved</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button className="signout-btn" onClick={handleLogout}>
           Sign Out

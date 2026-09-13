@@ -58,7 +58,7 @@ export default function AuthModal({ onClose, onAuthSuccess }) {
       <div className="auth-sheet">
         <button className="back-btn" onClick={onClose}>×</button>
         <div className="auth-header">
-          <h2>{isSignUp ? 'Join Ripple' : 'Sign in to Ripple'}</h2>
+          <h2>{isSignUp ? 'Join SociTea' : 'Sign in to SociTea'}</h2>
           <p>Verify reports, submit incidents, and stay updated locally.</p>
         </div>
 

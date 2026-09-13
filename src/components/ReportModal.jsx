@@ -1,22 +1,26 @@
 import React, { useState } from 'react';
+import {
+  IconPin, IconTarget, IconLightbulb, IconRoad, IconWater,
+  IconPower, IconTrash, IconBuild, IconBus, IconLeaf, IconChat
+} from './Icons';
 
 const CATEGORIES = [
-  { id: 'Roads', label: 'Roads', icon: '🛣️' },
-  { id: 'Water', label: 'Water', icon: '💧' },
-  { id: 'Electricity', label: 'Electricity', icon: '⚡' },
-  { id: 'Waste', label: 'Waste', icon: '🗑️' },
-  { id: 'Construction', label: 'Construction', icon: '🏗️' },
-  { id: 'Public Transport', label: 'Public Transport', icon: '🚌' },
-  { id: 'Environment', label: 'Environment', icon: '🍃' },
-  { id: 'Other', label: 'Other', icon: '💬' },
+  { id: 'Roads', label: 'Roads', Icon: IconRoad },
+  { id: 'Water', label: 'Water', Icon: IconWater },
+  { id: 'Electricity', label: 'Electricity', Icon: IconPower },
+  { id: 'Waste', label: 'Waste', Icon: IconTrash },
+  { id: 'Construction', label: 'Construction', Icon: IconBuild },
+  { id: 'Public Transport', label: 'Public Transport', Icon: IconBus },
+  { id: 'Environment', label: 'Environment', Icon: IconLeaf },
+  { id: 'Other', label: 'Other', Icon: IconChat },
 ];
 
 export default function ReportModal({ onClose, onSubmit }) {
   const [category, setCategory] = useState('Roads');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [locationName, setLocationName] = useState('End Point Road, Manipal');
-  const [coords, setCoords] = useState({ lat: 13.3521, lng: 74.7947 });
+  const [locationName, setLocationName] = useState('Bandra West, Mumbai');
+  const [coords, setCoords] = useState({ lat: 19.0760, lng: 72.8777 });
   const [imageUrl, setImageUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,10 +32,10 @@ export default function ReportModal({ onClose, onSubmit }) {
             lat: Number(position.coords.latitude.toFixed(4)),
             lng: Number(position.coords.longitude.toFixed(4)),
           });
-          setLocationName(`Current Location, Manipal`);
+          setLocationName(`Current Location, Mumbai`);
         },
         () => {
-          alert('Could not retrieve GPS location. Defaulting to Manipal.');
+          alert('Could not retrieve GPS location. Defaulting to Mumbai.');
         }
       );
     }
@@ -81,7 +85,7 @@ export default function ReportModal({ onClose, onSubmit }) {
             <p>Spot something? Let the community know.</p>
           </div>
           <div className="motto-badge">
-            <span className="bulb">💡</span>
+            <IconLightbulb size={14} color="#087267" />
             <span>Small reports.<br />Big impact.</span>
           </div>
         </div>
@@ -91,7 +95,7 @@ export default function ReportModal({ onClose, onSubmit }) {
           <section className="form-section">
             <div className="section-title-row">
               <div className="section-heading">
-                <span className="section-icon">📍</span>
+                <IconPin size={18} color="#087267" />
                 <h3>Location</h3>
               </div>
               <button
@@ -99,20 +103,20 @@ export default function ReportModal({ onClose, onSubmit }) {
                 className="btn-text-action"
                 onClick={handleUseCurrentLocation}
               >
-                🎯 Use current location
+                <IconTarget size={12} /> &nbsp; Use current location
               </button>
             </div>
 
             <div className="map-preview-box">
               <div className="map-placeholder-graphic">
-                <span className="map-label">Manipal Lake</span>
-                <span className="map-label center-tag">MIT</span>
-                <div className="map-pin">📍</div>
-                <span className="map-label pin-name">Manipal</span>
+                <span className="map-label">Bandra Bay</span>
+                <span className="map-label center-tag">BKC</span>
+                <div className="map-pin"><IconPin size={24} color="#087267" /></div>
+                <span className="map-label pin-name">Mumbai</span>
               </div>
               <div className="location-bar">
                 <div className="loc-info">
-                  <span className="pin-icon">📍</span>
+                  <IconPin size={16} color="#087267" />
                   <div>
                     <strong>{locationName}</strong>
                     <small>Lat {coords.lat}, Long {coords.lng}</small>
@@ -136,23 +140,25 @@ export default function ReportModal({ onClose, onSubmit }) {
           <section className="form-section">
             <div className="section-title-row">
               <div className="section-heading">
-                <span className="section-icon">◫</span>
                 <h3>Incident Category</h3>
               </div>
             </div>
 
             <div className="category-grid">
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  className={`category-card ${category === cat.id ? 'selected' : ''}`}
-                  onClick={() => setCategory(cat.id)}
-                >
-                  <span className="cat-icon">{cat.icon}</span>
-                  <span className="cat-label">{cat.label}</span>
-                </button>
-              ))}
+              {CATEGORIES.map((cat) => {
+                const CatIcon = cat.Icon;
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    className={`category-card ${category === cat.id ? 'selected' : ''}`}
+                    onClick={() => setCategory(cat.id)}
+                  >
+                    <CatIcon size={20} color={category === cat.id ? '#ffffff' : '#087267'} />
+                    <span className="cat-label">{cat.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </section>
 
@@ -160,7 +166,6 @@ export default function ReportModal({ onClose, onSubmit }) {
           <section className="form-section">
             <div className="section-title-row">
               <div className="section-heading">
-                <span className="section-icon">📝</span>
                 <h3>Incident Details</h3>
               </div>
             </div>
@@ -190,7 +195,7 @@ export default function ReportModal({ onClose, onSubmit }) {
             </div>
 
             <div className="hint-banner">
-              <span className="hint-icon">💡</span>
+              <IconLightbulb size={18} color="#087267" />
               <div>
                 <strong>Include helpful details</strong>
                 <p>e.g. size, exact location, when it started, any risks, and how it affects people.</p>
@@ -202,7 +207,6 @@ export default function ReportModal({ onClose, onSubmit }) {
           <section className="form-section">
             <div className="section-title-row">
               <div className="section-heading">
-                <span className="section-icon">📷</span>
                 <h3>Add Photos / Videos</h3>
               </div>
               <span className="sub-hint">Add up to 5 files</span>
@@ -217,7 +221,7 @@ export default function ReportModal({ onClose, onSubmit }) {
                   hidden
                 />
                 <span className="plus">+</span>
-                <span>{imageUrl ? 'Change Photo' : 'Add Photo/Video'}</span>
+                <span>{imageUrl ? 'Change Photo' : 'Add Photo'}</span>
               </label>
 
               {imageUrl ? (
@@ -234,7 +238,7 @@ export default function ReportModal({ onClose, onSubmit }) {
               ) : (
                 [1, 2, 3, 4].map((i) => (
                   <div key={i} className="upload-card placeholder">
-                    <span className="ph-icon">🖼️</span>
+                    <span className="ph-icon">+</span>
                   </div>
                 ))
               )}
