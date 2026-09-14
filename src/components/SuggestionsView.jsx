@@ -64,7 +64,7 @@ export default function SuggestionsView({ onAddToast, user }) {
         const formatted = data.map((item) => ({
           id: item.id,
           content: item.content,
-          location: item.location || 'Manipal',
+          location: item.location || 'Mumbai',
           agree_count: item.agree_count || 1,
           comments_count: item.comments_count || 0,
           time: item.created_at ? formatTimeAgo(item.created_at) : 'Just now',
@@ -96,7 +96,7 @@ export default function SuggestionsView({ onAddToast, user }) {
     setIsSubmitting(true);
     const payload = {
       content: newContent.trim(),
-      location: newLoc.trim() || 'Manipal',
+      location: newLoc.trim() || 'Mumbai',
       agree_count: 1,
       user_id: user?.id || null,
       created_at: new Date().toISOString(),
