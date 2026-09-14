@@ -9,9 +9,14 @@ import SplashScreen from './components/SplashScreen';
 import CommentsModal from './components/CommentsModal';
 import MapView from './components/MapView';
 import SuggestionsView from './components/SuggestionsView';
+import RippleView from './components/RippleView';
+import RippleModal from './components/RippleModal';
+import { MUMBAI_NODES } from './lib/infrastructureData';
+import { calculateCascade } from './lib/cascadeEngine';
 import {
   IconPin, IconHeart, IconChat, IconShare, IconBookmark,
-  IconShield, IconUser, IconKey, IconLightbulb, IconAlert, IconStar, IconHome
+  IconShield, IconUser, IconKey, IconLightbulb, IconAlert, IconStar, IconHome,
+  IconFlame, IconSnowflake, IconZap
 } from './components/Icons';
 
 const INITIAL_MOCK_EVENTS = [
@@ -28,7 +33,7 @@ const INITIAL_MOCK_EVENTS = [
     likes: 34,
     commentsCount: 9,
     category: 'Roads',
-    author: 'Hubert D\'Souza',
+    author: 'Karan Malhotra',
     credibility: 96,
     impactNote: 'High vehicle damage risk',
     image: '/pothole.jpg',
@@ -87,6 +92,24 @@ const INITIAL_MOCK_EVENTS = [
     impactNote: 'Debris collapse hazard',
     image: '/unsafe_building.jpg',
   },
+  {
+    id: 5,
+    title: 'Fallen Tree Blocking Road & Power Lines',
+    location: 'Juhu Tara Road, Mumbai',
+    latitude: 19.1024,
+    longitude: 72.8261,
+    distance: 0.6,
+    time: '20m ago',
+    seen: 72,
+    confirmed: 64,
+    likes: 41,
+    commentsCount: 18,
+    category: 'Environment',
+    author: 'Rohan Mehta',
+    credibility: 97,
+    impactNote: 'Traffic blockage & wire hazard',
+    image: '/tree.jpg',
+  },
 ];
 
 const filters = [
@@ -115,6 +138,7 @@ function App() {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showMapView, setShowMapView] = useState(false);
   const [selectedMapEventId, setSelectedMapEventId] = useState(null);
+  const [activeRippleNodeId, setActiveRippleNodeId] = useState(null);
   const [commentingEvent, setCommentingEvent] = useState(null);
   const [viewingPeopleEvent, setViewingPeopleEvent] = useState(null);
   const [isGuestPreview, setIsGuestPreview] = useState(false);
@@ -382,7 +406,7 @@ function App() {
 
   const handleOpenMap = (eventId = null) => {
     setSelectedMapEventId(eventId);
-    setShowMapView(true);
+    setActiveTab('map');
   };
 
   // Render splash screen if user is logged out and not explicitly previewing as guest
@@ -411,17 +435,27 @@ function App() {
     <div className="app-shell">
       <header className="header">
         <div className="brand" style={{ display: 'flex', alignItems: 'center' }}>
-          <img 
-            src="/socitea-header-logo.png" 
-            alt="SociTea - What's happening around you" 
-            style={{ height: '42px', width: 'auto', objectFit: 'contain' }} 
-          />
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '12px',
+            padding: '4px 10px',
+            border: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <img 
+              src="/socitea-header-logo.png" 
+              alt="SociTea - What's happening around you" 
+              style={{ height: '36px', width: 'auto', objectFit: 'contain' }} 
+            />
+          </div>
         </div>
         <div className="header-actions">
           <button
-            className="location-pill-btn"
-            onClick={() => handleOpenMap()}
-            title="Open Map View"
+            className="profile-pill-btn"
+            onClick={handleProfileClick}
+            title="User Profile"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -429,15 +463,30 @@ function App() {
               background: '#e0f2f1',
               border: '1px solid #b2dfdb',
               borderRadius: '20px',
-              padding: '6px 12px',
+              padding: '4px 10px 4px 6px',
               cursor: 'pointer',
               color: '#004d40',
               fontSize: '13px',
               fontWeight: '600'
             }}
           >
-            <IconPin size={14} color="#087267" />
-            <span>Mumbai</span>
+            <div
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                background: '#087267',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '11px',
+                fontWeight: '700'
+              }}
+            >
+              <IconUser size={14} color="#ffffff" />
+            </div>
+            <span>Profile</span>
           </button>
         </div>
       </header>
@@ -509,10 +558,74 @@ function App() {
 
                 {/* Verification Bar */}
                 <div className="verify-row">
-                  <div className="verify-copy"><strong>Have you seen this?</strong><span>Help verify this report</span></div>
-                  <button className={`confirm ${confirmed[event.id] ? 'selected' : ''}`} onClick={() => toggleConfirm(event.id)}>✓ &nbsp; Confirm</button>
-                  <button className={`not-here ${notHere[event.id] ? 'selected' : ''}`} onClick={() => toggleNotHere(event.id)}>× &nbsp; Not here</button>
+                  <div className="verify-copy"><strong>Is this active?</strong><span>Rate incident freshness</span></div>
+                  <button className={`confirm ${confirmed[event.id] ? 'selected' : ''}`} onClick={() => toggleConfirm(event.id)}>
+                    <IconFlame size={14} color={confirmed[event.id] ? '#0b7067' : '#176b61'} />
+                    <span>Hot</span>
+                  </button>
+                  <button className={`not-here ${notHere[event.id] ? 'selected' : ''}`} onClick={() => toggleNotHere(event.id)}>
+                    <IconSnowflake size={14} color={notHere[event.id] ? '#d32f2f' : '#e04750'} />
+                    <span>Cold</span>
+                  </button>
                 </div>
+
+                {/* Potential Ripple Preview */}
+                {event.infrastructure_node_id && (() => {
+                  const node = MUMBAI_NODES.find(n => n.id === event.infrastructure_node_id);
+                  const cascadeData = calculateCascade(event.infrastructure_node_id);
+                  if (!node) return null;
+
+                  return (
+                    <div style={{
+                      background: '#f4f9f8',
+                      border: '1px solid #e0ebe7',
+                      borderRadius: '14px',
+                      padding: '10px 12px',
+                      margin: '10px 12px 0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          background: '#087267',
+                          color: 'white',
+                          borderRadius: '50%',
+                          width: '26px',
+                          height: '26px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}>
+                          <IconZap size={14} color="#ffffff" />
+                        </div>
+                        <div>
+                          <div style={{ fontSize: '9px', textTransform: 'uppercase', color: '#0b7067', fontWeight: 800 }}>
+                            What could this affect?
+                          </div>
+                          <div style={{ fontSize: '11px', fontWeight: 700, color: '#112826' }}>
+                            {node.name} · {cascadeData.totalAffectedCount} connected assets
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setActiveRippleNodeId(event.infrastructure_node_id)}
+                        style={{
+                          background: '#087267',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '12px',
+                          padding: '5px 10px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          cursor: 'pointer'
+                        }}
+                      >
+                        See the ripple →
+                      </button>
+                    </div>
+                  );
+                })()}
 
                 {/* Social Interaction Bar */}
                 <div className="social-bar">
@@ -557,25 +670,31 @@ function App() {
         <SuggestionsView user={user} onAddToast={triggerToast} />
       )}
 
+      {activeTab === 'map' && (
+        <MapView
+          events={events}
+          selectedEventId={selectedMapEventId}
+          onClose={() => setActiveTab('home')}
+        />
+      )}
+
+      {activeTab === 'ripple' && (
+        <RippleView />
+      )}
+
       <nav className="bottom-nav">
         <button
-          className={`nav-item ${activeTab === 'home' && !showMapView ? 'active' : ''}`}
-          onClick={() => {
-            setShowMapView(false);
-            setActiveTab('home');
-          }}
+          className={`nav-item ${activeTab === 'home' ? 'active' : ''}`}
+          onClick={() => setActiveTab('home')}
         >
-          <IconHome size={20} color={activeTab === 'home' && !showMapView ? '#087267' : '#75807e'} />
+          <IconHome size={20} color={activeTab === 'home' ? '#087267' : '#75807e'} />
           Home
         </button>
         <button
-          className={`nav-item ${activeTab === 'suggestions' && !showMapView ? 'active' : ''}`}
-          onClick={() => {
-            setShowMapView(false);
-            setActiveTab('suggestions');
-          }}
+          className={`nav-item ${activeTab === 'suggestions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('suggestions')}
         >
-          <IconLightbulb size={20} color={activeTab === 'suggestions' && !showMapView ? '#087267' : '#75807e'} />
+          <IconLightbulb size={20} color={activeTab === 'suggestions' ? '#087267' : '#75807e'} />
           Suggestions
         </button>
         <button
@@ -592,15 +711,21 @@ function App() {
           +
         </button>
         <button
-          className={`nav-item ${showMapView ? 'active' : ''}`}
-          onClick={() => handleOpenMap()}
+          className={`nav-item ${activeTab === 'map' ? 'active' : ''}`}
+          onClick={() => {
+            setSelectedMapEventId(null);
+            setActiveTab('map');
+          }}
         >
-          <IconPin size={20} color={showMapView ? '#087267' : '#75807e'} />
+          <IconPin size={20} color={activeTab === 'map' ? '#087267' : '#75807e'} />
           Map
         </button>
-        <button className={`nav-item ${showProfileModal ? 'active' : ''}`} onClick={handleProfileClick}>
-          <IconUser size={20} color={showProfileModal ? '#087267' : '#75807e'} />
-          Profile
+        <button
+          className={`nav-item ${activeTab === 'ripple' ? 'active' : ''}`}
+          onClick={() => setActiveTab('ripple')}
+        >
+          <IconZap size={20} color={activeTab === 'ripple' ? '#087267' : '#75807e'} />
+          Ripple
         </button>
       </nav>
 
@@ -610,15 +735,6 @@ function App() {
           {toastMsg.pts > 0 && <span className="toast-badge">+{toastMsg.pts} Points</span>}
           <span className="toast-msg">{toastMsg.text}</span>
         </div>
-      )}
-
-      {/* Map View */}
-      {showMapView && (
-        <MapView
-          events={events}
-          selectedEventId={selectedMapEventId}
-          onClose={() => setShowMapView(false)}
-        />
       )}
 
       {/* Modals */}
@@ -671,10 +787,10 @@ function App() {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '280px', overflowY: 'auto' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: '#f4f8f7', borderRadius: '12px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#087267', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '13px' }}>H</div>
+                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#087267', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '13px' }}>K</div>
                 <div>
-                  <strong style={{ fontSize: '12px', color: '#112826', display: 'block' }}>Hubert Dsouza (You)</strong>
-                  <small style={{ fontSize: '10px', color: '#0b7067' }}>✓ Verified resident · 94% Credibility</small>
+                  <strong style={{ fontSize: '12px', color: '#112826', display: 'block' }}>Karan Malhotra (You)</strong>
+                  <small style={{ fontSize: '10px', color: '#0b7067' }}>✓ Verified resident · 96% Credibility</small>
                 </div>
               </div>
 
@@ -710,6 +826,12 @@ function App() {
             );
             triggerToast('Comment added to discussion!', 2);
           }}
+        />
+      )}
+      {activeRippleNodeId && (
+        <RippleModal
+          nodeId={activeRippleNodeId}
+          onClose={() => setActiveRippleNodeId(null)}
         />
       )}
     </div>

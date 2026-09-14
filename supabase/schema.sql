@@ -86,10 +86,42 @@ values
   ('This curve near Worli Naka urgently needs a speed breaker.', 'Worli Naka, Mumbai', 54, 11),
   ('Why doesn''t the local bus stop near Andheri East have shaded shelter for monsoons?', 'Andheri East, Mumbai', 29, 4);
 
--- Seed initial 4 real incident events
-insert into public.events (author_name, author_credibility, title, description, category, location, latitude, longitude, distance, seen, confirmed, likes_count, comments_count, impact_note, image)
+-- 4. Infrastructure Nodes & Edges (SociTea Butterfly Effect Infrastructure System)
+alter table public.events add column if not exists infrastructure_node_id text;
+
+create table if not exists public.infrastructure_nodes (
+  id text primary key,
+  name text not null,
+  type text not null,
+  latitude numeric(9,6),
+  longitude numeric(9,6),
+  criticality text default 'medium',
+  description text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.infrastructure_nodes enable row level security;
+drop policy if exists "Allow public read infrastructure_nodes" on public.infrastructure_nodes;
+create policy "Allow public read infrastructure_nodes" on public.infrastructure_nodes for select using (true);
+
+create table if not exists public.infrastructure_edges (
+  id text primary key,
+  source_node_id text references public.infrastructure_nodes(id) on delete cascade,
+  target_node_id text references public.infrastructure_nodes(id) on delete cascade,
+  relationship_type text not null,
+  description text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+alter table public.infrastructure_edges enable row level security;
+drop policy if exists "Allow public read infrastructure_edges" on public.infrastructure_edges;
+create policy "Allow public read infrastructure_edges" on public.infrastructure_edges for select using (true);
+
+-- Seed initial real incident events with optional infrastructure node linkage
+insert into public.events (author_name, author_credibility, title, description, category, location, latitude, longitude, distance, seen, confirmed, likes_count, comments_count, impact_note, image, infrastructure_node_id)
 values
-  ('Hubert D''Souza', 96.0, 'Severe Pothole Damage & Mud Water Logging', 'Large potholes filled with muddy rainwater creating major driving hazard for bikes and cars.', 'Roads', 'Western Express Highway, Mumbai', 19.0760, 72.8777, 0.4, 48, 56, 34, 9, 'High vehicle damage risk', '/pothole.jpg'),
-  ('Ananya Rao', 94.0, 'Drainage Overflow & Road Inundation', 'Blocked roadside drain overflowing across the entire road during monsoon rain.', 'Water', 'Bandra Kurla Complex, Mumbai', 19.0657, 72.8686, 0.8, 62, 42, 28, 11, 'Pedestrian hazard & flooding', '/flooding.jpg'),
-  ('Vikram Sen', 91.0, 'Illegal Waste Dump & Uncollected Garbage Pile', 'Huge pile of mixed uncollected garbage dumped by roadside causing foul odor and health concerns.', 'Sanitation', 'Dadar Market Area, Mumbai', 19.0178, 72.8478, 1.5, 39, 31, 22, 6, 'Foul odor & sanitation risk', '/garbage.jpg'),
-  ('Priya Sharma', 95.0, 'Dilapidated Structural Danger & Unsafe Building', 'Old crumbling building structure with visible wall cracks and risk of falling debris.', 'Public Safety', 'Colaba Causeway, Mumbai', 18.9067, 72.8147, 2.1, 54, 45, 38, 14, 'Debris collapse hazard', '/unsafe_building.jpg');
+  ('Karan Malhotra', 96.0, 'Severe Pothole Damage & Mud Water Logging', 'Large potholes filled with muddy rainwater creating major driving hazard for bikes and cars.', 'Roads', 'Western Express Highway, Mumbai', 19.0760, 72.8777, 0.4, 48, 56, 34, 9, 'High vehicle damage risk', '/pothole.jpg', 'node-drain-2'),
+  ('Ananya Rao', 94.0, 'Drainage Overflow & Road Inundation', 'Blocked roadside drain overflowing across the entire road during monsoon rain.', 'Water', 'Bandra Kurla Complex, Mumbai', 19.0657, 72.8686, 0.8, 62, 42, 28, 11, 'Pedestrian hazard & flooding', '/flooding.jpg', 'node-drain-1'),
+  ('Vikram Sen', 91.0, 'Illegal Waste Dump & Uncollected Garbage Pile', 'Huge pile of mixed uncollected garbage dumped by roadside causing foul odor and health concerns.', 'Sanitation', 'Dadar Market Area, Mumbai', 19.0178, 72.8478, 1.5, 39, 31, 22, 6, 'Foul odor & sanitation risk', '/garbage.jpg', 'node-san-1'),
+  ('Priya Sharma', 95.0, 'Dilapidated Structural Danger & Unsafe Building', 'Old crumbling building structure with visible wall cracks and risk of falling debris.', 'Public Safety', 'Colaba Causeway, Mumbai', 18.9067, 72.8147, 2.1, 54, 45, 38, 14, 'Debris collapse hazard', '/unsafe_building.jpg', 'node-road-3'),
+  ('Rohan Mehta', 97.0, 'Fallen Tree Blocking Road & Power Lines', 'Heavy tree branch fallen across main road, tangling overhead wires and blocking traffic lane.', 'Environment', 'Juhu Tara Road, Mumbai', 19.1024, 72.8261, 0.6, 72, 64, 41, 18, 'Traffic blockage & wire hazard', '/tree.jpg', 'node-tree-1');

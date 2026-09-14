@@ -10,7 +10,8 @@ export default function ProfileModal({ user, profile, points = 50, credibility =
   };
 
   const displayName = profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'SociTea Member';
-  const avatarUrl = profile?.avatar_url || user?.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80';
+  const googleAvatar = profile?.avatar_url || user?.user_metadata?.avatar_url;
+  const initialLetter = (displayName ? displayName.charAt(0) : 'S').toUpperCase();
 
   return (
     <div className="modal-overlay">
@@ -18,8 +19,26 @@ export default function ProfileModal({ user, profile, points = 50, credibility =
         <button className="back-btn" onClick={onClose}>×</button>
         
         <div className="profile-card-header">
-          <div className="profile-avatar-large">
-            <img src={avatarUrl} alt={displayName} />
+          <div className="profile-avatar-large" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {googleAvatar ? (
+              <img src={googleAvatar} alt={displayName} />
+            ) : (
+              <div style={{
+                width: '72px',
+                height: '72px',
+                borderRadius: '50%',
+                background: '#087267',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '32px',
+                fontWeight: '800',
+                boxShadow: '0 4px 14px rgba(8, 114, 103, 0.3)'
+              }}>
+                {initialLetter}
+              </div>
+            )}
           </div>
           <h3>{displayName}</h3>
           <p className="profile-email">{user?.email || 'Logged in user'}</p>

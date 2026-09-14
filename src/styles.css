@@ -5,12 +5,12 @@
   font-synthesis: none;
 }
 
-/* Splash Screen Redesign matching exact uploaded design */
 .splash-screen-redesign {
-  width: min(100%, 430px);
+  width: 100%;
+  max-width: 430px;
   min-height: 100vh;
   margin: 0 auto;
-  background: linear-gradient(180deg, #0b3d36 0%, #062823 60%, #041f1b 100%);
+  background: #062823 url('/splash-bg.png') center bottom / cover no-repeat;
   color: #ffffff;
   padding: 60px 24px 30px;
   display: flex;
@@ -21,13 +21,6 @@
   box-shadow: 0 12px 50px rgba(20,50,48,.25);
   cursor: pointer;
   user-select: none;
-}
-@media (min-width: 700px) {
-  .splash-screen-redesign {
-    border-radius: 28px;
-    min-height: calc(100vh - 56px);
-    margin: 28px auto;
-  }
 }
 
 .splash-bg-clouds {
@@ -210,7 +203,7 @@ button { font: inherit; cursor: pointer; border: 0; }
 .verify-copy { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .verify-copy strong { font-size: 10px; }
 .verify-copy span { color: #7b8684; font-size: 9px; }
-.confirm, .not-here { flex: 0 0 auto; padding: 11px 12px; border-radius: 23px; font-size: 10px; font-weight: 700; }
+.confirm, .not-here { flex: 0 0 auto; padding: 10px 14px; border-radius: 23px; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
 .confirm { background: #e8f4f0; color: #176b61; }
 .confirm.selected { background: #bde7dc; }
 .not-here { background: #fff0f1; color: #e04750; }
@@ -224,9 +217,88 @@ button { font: inherit; cursor: pointer; border: 0; }
 .nav-item span { font-size: 23px; line-height: 22px; }
 .nav-item.active { color: #087267; font-weight: 800; }
 .report-button { width: 49px; height: 49px; border-radius: 50%; background: #087267; color: white; font-size: 31px; line-height: 1; box-shadow: 0 3px 10px rgba(8,114,103,.35); margin-top: -25px; }
-@media (min-width: 700px) {
-  body { padding: 28px 0; }
-  .app-shell { border-radius: 28px; box-shadow: 0 12px 50px rgba(20,50,48,.12); min-height: calc(100vh - 56px); }
+@media (min-width: 768px) {
+  body {
+    padding: 0;
+    margin: 0;
+    background: #f0f4f3;
+    display: block;
+    min-height: 100vh;
+  }
+  .app-shell {
+    width: 100%;
+    max-width: 1280px;
+    min-height: 100vh;
+    border-radius: 0;
+    margin: 0 auto;
+    padding: 24px 40px 100px;
+    box-shadow: none;
+    background: #f8faf9;
+  }
+  .header {
+    padding: 12px 16px 20px;
+    border-bottom: 1px solid #e1ebe7;
+    margin-bottom: 20px;
+  }
+  .filter-scroll {
+    padding-bottom: 20px;
+  }
+  .feed {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 24px;
+  }
+  .event-block {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(19, 48, 47, 0.08);
+  }
+  .event-card {
+    height: 320px;
+  }
+  .splash-screen-redesign {
+    width: 100%;
+    max-width: 100%;
+    min-height: 100vh;
+    border-radius: 0;
+    margin: 0;
+    padding: 80px 60px 40px;
+    box-shadow: none;
+    background: #062823 !important;
+    background-image: none !important;
+  }
+  .splash-center-content {
+    margin-top: 40px;
+  }
+  .splash-main-tagline {
+    font-size: 42px !important;
+  }
+  .bottom-nav {
+    bottom: 24px;
+    width: 480px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 36px rgba(0, 0, 0, 0.18);
+  }
+  .map-view-screen {
+    width: 100%;
+    height: calc(100vh - 230px);
+    min-height: 550px;
+    margin-bottom: 90px;
+    border-radius: 24px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #e0ebe7;
+    box-shadow: 0 8px 30px rgba(19, 48, 47, 0.08);
+  }
+  .map-view-screen .map-preview-card {
+    bottom: 24px;
+  }
+  .map-view-screen .map-back-btn {
+    display: none;
+  }
 }
 
 /* Modals & Sheet Overlays */
@@ -897,25 +969,21 @@ button { font: inherit; cursor: pointer; border: 0; }
 .comment-meta small { font-size: 9px; color: #889593; }
 .comment-text { font-size: 11px; color: #384845; margin: 0; }
 
-/* Fullscreen Interactive Map View */
+/* Interactive Map View Tab Screen */
 .map-view-screen {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 160px);
+  min-height: 520px;
   background: #eef1ef;
   display: flex;
   flex-direction: column;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid #e0ebe7;
+  box-shadow: 0 4px 20px rgba(19, 48, 47, 0.08);
 }
-@media (min-width: 700px) {
-  .map-view-screen {
-    width: min(100%, 430px);
-    height: calc(100vh - 56px);
-    margin: 28px auto;
-    border-radius: 28px;
-    overflow: hidden;
-    box-shadow: 0 12px 50px rgba(20,50,48,.2);
-  }
-}
+
 
 .map-leaflet-container {
   width: 100%;
@@ -1014,7 +1082,7 @@ button { font: inherit; cursor: pointer; border: 0; }
 /* Map Bottom Event Preview Card */
 .map-preview-card {
   position: absolute;
-  bottom: 20px;
+  bottom: 95px;
   left: 50%;
   transform: translateX(-50%);
   width: min(calc(100% - 24px), 396px);
